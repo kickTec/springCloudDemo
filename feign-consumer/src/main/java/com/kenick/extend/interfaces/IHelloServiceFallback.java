@@ -1,10 +1,10 @@
-package com.kenick.service;
+package com.kenick.extend.interfaces;
 
 import com.kenick.pojo.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HelloServiceFallback implements HelloService{
+public class IHelloServiceFallback implements IHelloService {
 
     @Override
     public String hello(String name) {
@@ -15,4 +15,10 @@ public class HelloServiceFallback implements HelloService{
     public String postUserSubmit(User user) {
         return "post user error";
     }
+
+    @Override
+    public String addUser(String userId, String name, Integer age) {
+        return "helloAddUser error";
+    }
+
 }
