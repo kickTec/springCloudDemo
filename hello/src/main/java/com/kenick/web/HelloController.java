@@ -1,6 +1,7 @@
 package com.kenick.web;
 
 import com.kenick.pojo.User;
+import com.kenick.user.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,9 @@ public class HelloController {
 
     @Autowired
     private DiscoveryClient client;
+
+    @Autowired
+    private IUserService userService;
 
     @RequestMapping("/hello")
     public String hello(@RequestParam String name){
@@ -42,5 +46,10 @@ public class HelloController {
     public String postUserSubmit(@RequestBody User user){
         System.out.println("提交的user为:" + user.toString());
         return user.toString()+"已提交!";
+    }
+
+    @RequestMapping("/addUser")
+    public String addUser(@RequestParam("userId") String userId,@RequestParam("name") String name,@RequestParam("age") Integer age){
+        return "ret: " + userService.saveUser(userId,name,age);
     }
 }
