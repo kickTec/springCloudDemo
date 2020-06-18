@@ -26,6 +26,8 @@ public class UserServiceImpl implements IUserService {
         user.setName(name);
         user.setAge(age);
         int lines = userMapper.insert(user);
+        // 产生异常
+        // int num = 1/0;
         return lines;
     }
 

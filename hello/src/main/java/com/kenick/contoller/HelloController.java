@@ -1,5 +1,6 @@
 package com.kenick.contoller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kenick.pojo.User;
 import com.kenick.user.service.IUserService;
 import org.slf4j.Logger;
@@ -9,11 +10,13 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+
 @RestController
 public class HelloController {
     private final Logger logger = LoggerFactory.getLogger(HelloController.class);
 
-    @Autowired
+    @Resource
     private DiscoveryClient client;
 
     @Autowired
@@ -50,6 +53,17 @@ public class HelloController {
 
     @RequestMapping("/addUser")
     public String addUser(@RequestParam("userId") String userId,@RequestParam("name") String name,@RequestParam("age") Integer age){
-        return "ret: " + userService.saveUser(userId,name,age);
+        logger.debug("HelloController.addUser in,userId:{}", userId);
+        JSONObject retJson = new JSONObject();
+        retJson.put("userId", userId);
+        try{
+            int saveRet = userService.saveUser(userId, name, age);
+            retJson.put("ret", saveRet);
+            retJson.put("success", true);
+        }catch (Exception e){
+            retJson.put("success", false);
+            retJson.put("error", e.getMessage());
+        }
+        return retJson.toJSONString();
     }
 }
