@@ -1,6 +1,6 @@
 package com.kenick.hello;
 
-import com.kenick.web.HelloController;
+import com.kenick.contoller.HelloController;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;

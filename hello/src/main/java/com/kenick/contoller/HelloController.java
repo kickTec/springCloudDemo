@@ -1,4 +1,4 @@
-package com.kenick.web;
+package com.kenick.contoller;
 
 import com.kenick.pojo.User;
 import com.kenick.user.service.IUserService;
