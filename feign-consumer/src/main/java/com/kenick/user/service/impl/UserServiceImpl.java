@@ -1,5 +1,6 @@
 package com.kenick.user.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kenick.extend.interfaces.IHelloService;
 import com.kenick.user.bean.User;
 import com.kenick.user.dao.UserMapper;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements IUserService {
     @Transactional
     @Override
     public int saveUser(String userId,String name, int age) {
+
         logger.debug("本地开始保存用户！");
         User user = new User();
         user.setUserId(userId);
@@ -39,6 +41,13 @@ public class UserServiceImpl implements IUserService {
         logger.debug("开始远程调用helloservice!");
         String remoteRet = helloService.addUser("remote_hello" + userId, name, age);
         logger.debug("远程调用helloservice结果:" + remoteRet);
+        JSONObject retJson = JSONObject.parseObject(remoteRet);
+        if(!retJson.getBoolean("success")){
+            throw new RuntimeException("远程调用出现异常，需要回退!");
+        }
+
+        // 产生异常
+        int num = 1/0;
         return ret;
     }
 
