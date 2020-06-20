@@ -53,9 +53,9 @@ public class UserServiceImpl implements IUserService {
             userMapper.insert(user);
         }
 
-        // 修改之后发送消息给消费者进行其它业务处理，最终一致性
+        // 修改之后发送消息给消费者进行业务处理，最终一致性
         TransactionMessage message = new TransactionMessage();
-        message.setQueue("house_queue");
+        message.setQueue("hello_queue");
         message.setCreateDate(new Date());
         message.setSendSystem("hello-service");
         message.setMessage(JsonUtils.toJson(user));
