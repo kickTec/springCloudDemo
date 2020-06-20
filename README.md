@@ -8,7 +8,7 @@ hello:消息生产者（对应书中house service），启动顺序：5。
 其它为依赖的一些服务。  
 
 流程图：
-
+![image](https://github.com/kickTec/springCloudDemo/blob/transaction-activemq/%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
 
 调用过程：  
 1.请求hello服务的updateUser接口，此接口会更新用户信息（若无则创建）。  
