@@ -66,4 +66,13 @@ public class HelloController {
         }
         return retJson.toJSONString();
     }
+
+    /**
+     * 修改用户 分布式事务可靠消息发送 activemq
+     */
+    @RequestMapping("/updateUser")
+    public Object updateUser(@RequestParam("userId") String userId,@RequestParam("name") String name) {
+        logger.debug("HelloController.updateUser in,userId:{},name:{}", userId, name);
+        return userService.update(userId, name);
+    }
 }

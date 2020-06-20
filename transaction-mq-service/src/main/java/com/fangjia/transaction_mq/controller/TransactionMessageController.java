@@ -32,7 +32,7 @@ public class TransactionMessageController {
 	private TransactionMessageService transactionMessageService;
 	
 	/**
-	 * 发送消息，只存储到消息表中，发送逻辑有具体的发送线程执行
+	 * 发送消息，只存储到消息表中，发送逻辑由具体的发送线程执行
 	 * @param message  消息内容
 	 * @return true 成功 | false 失败
 	 */
@@ -42,8 +42,7 @@ public class TransactionMessageController {
 	}
 
 	/**
-	 * 批量发送消息，只存储到消息表中，发送逻辑有具体的发送线程执行
-	 * @param message  消息内容
+	 * 批量发送消息，只存储到消息表中，发送逻辑由具体的发送线程执行
 	 * @return true 成功 | false 失败
 	 */
 	@PostMapping("/sends")
@@ -115,7 +114,6 @@ public class TransactionMessageController {
 	/**
 	 * 分页查询具体状态的消息
 	 * @param query
-	 * @param status
 	 * @return
 	 */
 	@PostMapping("/query")

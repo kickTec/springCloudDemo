@@ -6,4 +6,6 @@ package com.kenick.user.service;
  */
 public interface IUserService {
     int saveUser(String userId,String name, int age);
+
+    Object update(String userId, String name);
 }
