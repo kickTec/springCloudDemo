@@ -1,0 +1,5 @@
+org\cxytiandi\conf\springboot\demo\conf\MongoConf.class
+org\cxytiandi\conf\springboot\demo\conf\Biz.class
+org\cxytiandi\conf\springboot\demo\web\ConfController.class
+org\cxytiandi\conf\springboot\demo\App.class
+org\cxytiandi\conf\springboot\demo\conf\MongoConf$1.class
