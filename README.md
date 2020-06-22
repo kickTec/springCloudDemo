@@ -11,6 +11,9 @@ test.sql：数据库文件。
 txlcn-tm管理网址：
 http://192.168.0.105:7970/admin/index.html#/
 
+txlcn异常流程图
+![images](https://github.com/kickTec/springCloudDemo/blob/tx-lcn/TX-LCN_exception_sequence.png)
+
 下面这两个服务另一个版本的springcloud 1.5.4，本来想集成tx-lc的，暂未弄好，后续又看到阿里分布式事务seata，  
 由于tx-lcn暂定维护及seata可能更优秀，暂时搁置集成了。  
 feign-consumer:springcloud 1.5.,类似于服务a,操作数据库及调用hello服务，。  
