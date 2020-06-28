@@ -57,7 +57,8 @@ public class HelloController {
         JSONObject retJson = new JSONObject();
         retJson.put("userId", userId);
         try{
-            int saveRet = userService.saveUser(userId, name, age);
+            // int saveRet = userService.saveUser(userId, name, age);
+            int saveRet = userService.saveUserByMsgTx(userId, name, age);
             retJson.put("ret", saveRet);
             retJson.put("success", true);
         }catch (Exception e){
