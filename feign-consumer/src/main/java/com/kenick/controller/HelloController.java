@@ -1,7 +1,6 @@
 package com.kenick.controller;
 
 import com.kenick.extend.interfaces.IHelloService;
-import com.kenick.pojo.User;
 import com.kenick.user.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,6 @@ public class HelloController {
     @RequestMapping(value = "/hello",method = RequestMethod.GET)
     public String hello(String name){
         return helloService.hello(name);
-    }
-
-    @RequestMapping(value = "/submitUser",method = RequestMethod.GET)
-    public String postUserSubmit(Long id,String name){
-        User user = new User();
-        user.setId(id);
-        user.setName(name);
-        return helloService.postUserSubmit(user);
     }
 
     @RequestMapping("/addUser")

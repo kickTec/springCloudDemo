@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 
@@ -28,8 +29,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public int saveUser(String userId,String name, int age) {
-
+    public int saveUser(String userId, String name, int age) {
         logger.debug("本地开始保存用户！");
         User user = new User();
         user.setUserId(userId);
@@ -48,6 +48,16 @@ public class UserServiceImpl implements IUserService {
 
         // 产生异常
         int num = 1/0;
+        return ret;
+    }
+
+    @Transactional
+    @Override
+    public int updateUser(User user) {
+        logger.debug("currentTransactionName:{},level:{}", TransactionSynchronizationManager.getCurrentTransactionName(),
+                TransactionSynchronizationManager.getCurrentTransactionIsolationLevel());
+
+        int ret = userMapper.updateByPrimaryKeySelective(user);
         return ret;
     }
 
