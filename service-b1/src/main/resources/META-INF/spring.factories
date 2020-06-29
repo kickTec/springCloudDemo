@@ -1,2 +1,0 @@
-#启用我们的自定义环境处理类
-org.springframework.boot.env.EnvironmentPostProcessor=com.kenick.qch.serviceb1.MyEnvironmentPostProcessor
