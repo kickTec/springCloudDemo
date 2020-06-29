@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kenick.unusual.dao.UnusualMapper" >
+
+    <insert id="insertMessageTx" >
+        insert into message_tx (message_id, topics, tags,
+        `keys`, message_body, service_type, service_id,
+        relate_id, message_status, modify_date, create_date)
+        values
+        (#{messageId}, #{topics} ,#{tags}, #{keys}, #{messageBody}, #{serviceType}, #{serviceId}, #{relateId}, #{messageStatus}, now(), now())
+    </insert>
+
+    <update id="updateMessageTxStatus" >
+        update message_tx set message_status=#{messageStatus},modify_date=now() where message_id = #{messageId}
+    </update>
+
+    <update id="updateMessageTxMqId" >
+        update message_tx set mq_msg_id=#{mqId},modify_date=now() where message_id = #{messageId}
+    </update>
+
+    <select id="selectMessageTxById" resultType="java.util.HashMap">
+        SELECT * FROM message_tx WHERE message_id=#{messageId};
+    </select>
+</mapper>
