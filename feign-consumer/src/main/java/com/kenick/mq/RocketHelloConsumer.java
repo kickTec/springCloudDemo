@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.kenick.user.bean.User;
 import com.kenick.user.service.IUserService;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyStatus;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
-import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,21 +35,27 @@ public class RocketHelloConsumer {
             defaultMQPushConsumer.setConsumerGroup("hello-consumer");
             defaultMQPushConsumer.subscribe("kenick","2020");
 
-            defaultMQPushConsumer.registerMessageListener((MessageListenerOrderly) (messageExts, context) -> {
-                context.setAutoCommit(true);
-
-                for (MessageExt messageExt: messageExts) {
-                    String jsonStr = new String(messageExt.getBody());
-                    logger.debug("接收到消息: " + jsonStr);
-                    User user = JSON.parseObject(jsonStr, User.class);
-                    user.setName(user.getName()+"-consumer");
-                    userService.updateUser(user);
+            defaultMQPushConsumer.registerMessageListener((MessageListenerConcurrently) (messageExts, context) -> {
+                try{
+                    for (MessageExt messageExt: messageExts) {
+                        String jsonStr = new String(messageExt.getBody());
+                        logger.debug("接收到消息: " + jsonStr);
+                        User user = JSON.parseObject(jsonStr, User.class);
+                        user.setName(user.getName()+"-consumer");
+                        if(user.getAge() == 30){
+                            throw new RuntimeException("age 30消费发生异常!");
+                        }
+                        userService.updateUser(user);
+                    }
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }catch (Exception e){
+                    logger.debug("消费发生异常!", e);
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-                return ConsumeOrderlyStatus.SUCCESS;
             });
             defaultMQPushConsumer.start();
-        } catch (MQClientException e) {
-            logger.debug("rocketmq消费者发生异常！");
+        } catch (Exception e) {
+            logger.debug("rocketmq消费者订阅发生异常！");
         }
     }
 
