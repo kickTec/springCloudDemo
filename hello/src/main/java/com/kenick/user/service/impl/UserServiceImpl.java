@@ -3,6 +3,7 @@ package com.kenick.user.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.kenick.mq.service.IRocketMqService;
+import com.kenick.unusual.dao.UnusualMapper;
 import com.kenick.user.bean.User;
 import com.kenick.user.dao.UserMapper;
 import com.kenick.user.service.IUserService;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * author: zhanggw
@@ -37,6 +39,9 @@ public class UserServiceImpl implements IUserService {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Resource
+    private UnusualMapper unusualMapper;
+
     @Transactional
     @Override
     public int saveUser(String userId, String name, int age) {
@@ -49,33 +54,46 @@ public class UserServiceImpl implements IUserService {
         user.setAge(age);
         int lines = userMapper.insert(user);
 
-        // int num = 1/0;
+        if(age == 29){
+            int num = 1/0; // 本地事务抛出异常
+        }
         return lines;
     }
 
     @Override
     public int saveUserByMsgTx(String userId, String name, int age) throws Exception{
-        User user = new User();
-        user.setUserId(userId);
-        user.setName(name);
-        user.setAge(age);
+        JSONObject userJson = new JSONObject();
+        userJson.put("userId", userId);
+        userJson.put("name", name);
+        userJson.put("age", age);
+        userJson.put("messageId", System.currentTimeMillis()+"user");
+        userJson.put("serviceType", 1); // 业务类型 1 添加用户
+        userJson.put("serviceId", userId); // 业务id
 
-        String body = JSON.toJSONString(user);
-        Message message = new Message("kenick", "2020", "KEY2020", body.getBytes());
+        Message message = new Message("kenick", "2020", "KEY2020", userJson.toJSONString().getBytes());
         rocketMqService.sendTransactionMessage(message, new TransactionListener() {
             @Override
             public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
                 logger.debug("开始执行本地事务,{}", msg.toString());
+                JSONObject msgJson = JSON.parseObject(new String(msg.getBody()));
+                String messageId = msgJson.getString("messageId");
                 try{
-                    String jsonString = new String(msg.getBody());
-                    User saveUser = JSONObject.parseObject(jsonString, User.class);
-                    // saveUser(saveUser.getUserId(), saveUser.getName(), saveUser.getAge()); 这种方式调用方法，不会使用到原来的事务
+                    User saveUser = JSONObject.parseObject(msgJson.toJSONString(), User.class);
                     IUserService userService = applicationContext.getBean(IUserService.class);
                     userService.saveUser(saveUser.getUserId(), saveUser.getName(), saveUser.getAge());
                     logger.debug("本地事务执行完毕!");
+
+                    unusualMapper.updateMessageTxStatus(messageId, 2); // 修改消息状态为已发送
+
+                    if(saveUser.getAge() == 28){ // 返回未知，触发后续回查本地事务状态
+                        logger.debug("触发本地事务返回未知状态条件！");
+                        return LocalTransactionState.UNKNOW;
+                    }
+
                     return LocalTransactionState.COMMIT_MESSAGE;
                 }catch (Exception e){
                     logger.debug("本地事务执行异常,消息:{},异常:{}", msg.toString(), e.getMessage());
+                    unusualMapper.updateMessageTxStatus(messageId, 3); // 修改消息状态为发送失败，本地事务异常，可后续查看及处理
                     return LocalTransactionState.ROLLBACK_MESSAGE;
                 }
             }
@@ -83,7 +101,19 @@ public class UserServiceImpl implements IUserService {
             @Override
             public LocalTransactionState checkLocalTransaction(MessageExt msg) {
                 logger.debug("开始检查本地事务! msg:{}", msg);
-                return LocalTransactionState.COMMIT_MESSAGE;
+                JSONObject msgJson = JSON.parseObject(new String(msg.getBody()));
+                String messageId = msgJson.getString("messageId");
+                Map<String, Object> objectMap = unusualMapper.selectMessageTxById(messageId);
+                logger.debug("回查消息结果为:{}", objectMap);
+
+                String messageStatus = objectMap.get("message_status").toString();
+                if("2".equals(messageStatus)){
+                    return LocalTransactionState.COMMIT_MESSAGE; // 本地事务执行成功，提交消息
+                }else if("3".equals(messageStatus)){
+                    return LocalTransactionState.ROLLBACK_MESSAGE; // 本地异常，回退消息
+                }else{
+                    return LocalTransactionState.UNKNOW; // 未知
+                }
             }
         });
         return 1;
