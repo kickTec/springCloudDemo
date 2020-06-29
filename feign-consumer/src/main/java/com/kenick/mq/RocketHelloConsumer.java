@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * author: zhanggw
@@ -39,15 +40,23 @@ public class RocketHelloConsumer {
             DefaultMQPushConsumer defaultMQPushConsumer = rocketMqProducer.getDefaultMQPushConsumer();
             defaultMQPushConsumer.setConsumerGroup("hello-consumer");
             defaultMQPushConsumer.subscribe("kenick","2020");
-            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(10); // 批量消费 先启动生产者，再启动消费者
+            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(10); // 批量消费 先启动生产者，再启动消费者；重要业务可使用默认值1
 
-            defaultMQPushConsumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
-                for (MessageExt messageExt: msgs) { // 批量消费
+            defaultMQPushConsumer.registerMessageListener((MessageListenerConcurrently) (msgList, context) -> {
+                logger.debug("本次共收到{}条消息", msgList.size());
+                for (MessageExt messageExt: msgList) { // 批量消费
                     String jsonStr = new String(messageExt.getBody());
                     logger.debug("接收到消息: " + jsonStr);
                     JSONObject msgJson = JSON.parseObject(jsonStr);
                     String messageId = msgJson.getString("messageId");
                     try{
+                        // 重复消息处理 或 幂等处理
+                        Map<String, Object> msgMap = unusualMapper.selectMessageTxById(messageId);
+                        String messageStatus = msgMap.get("message_status").toString();
+                        if("4".equals(messageStatus)){
+                            continue; // 已消费成功，跳过
+                        }
+
                         // 消费业务 修改名称
                         User user = JSON.parseObject(jsonStr, User.class);
                         user.setName(user.getName()+"-consumer");
@@ -55,16 +64,14 @@ public class RocketHelloConsumer {
                             throw new RuntimeException("age 30消费发生异常!");
                         }
                         userService.updateUser(user);
-
-                        // 修改
-                        unusualMapper.updateMessageTxStatus(messageId, 4); // 消费成功
+                        unusualMapper.updateMessageTxStatus(messageId, 4); // 修改消费记录状态 成功
                     }catch (Exception e){
                         logger.debug("消费发生异常!", e);
-                        unusualMapper.updateMessageTxStatus(messageId, 5); // 消费成功
+                        unusualMapper.updateMessageTxStatus(messageId, 5); // 修改消费记录状态 失败
                         return ConsumeConcurrentlyStatus.RECONSUME_LATER; // 只要有一个失败了就停止
                     }
                 }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS; // 全部成功，才算成功
             });
             defaultMQPushConsumer.start();
         } catch (Exception e) {
