@@ -49,7 +49,7 @@ public class RocketMqServiceImpl implements IRocketMqService {
     public TransactionSendResult sendTransactionMessage(Message message, TransactionListener transactionListener) {
         TransactionSendResult transactionSendResult = null;
         try{
-            // 初始化消息数据，若发送失败，可尝试重新发送
+            // 发送半消息前，持久化消息数据，若发送失败，可尝试重新发送
             String messageBody = new String(message.getBody());
             JSONObject msgBody = JSON.parseObject(messageBody);
             String messageId = msgBody.getString("messageId");
@@ -59,14 +59,13 @@ public class RocketMqServiceImpl implements IRocketMqService {
                         msgBody.getString("relateId"), 1);
             }
 
-            // 发送消息
+            // 向rocketmq发送消息
             TransactionMQProducer transactionMQProducer = rocketMqProducer.getTransactionMqProducer(transactionListener);
-
             transactionSendResult = transactionMQProducer.sendMessageInTransaction(message, transactionMQProducer.getTransactionListener());
             logger.debug("发送消息结果:{}", transactionSendResult);
 
-            // 本地消息关联mq消息id
-            if(StringUtils.isNotBlank(transactionSendResult.getMsgId())){
+            // 发送完消息后，将本地消息关联mq消息id
+            if(transactionSendResult != null && StringUtils.isNotBlank(transactionSendResult.getMsgId())){
                 unusualMapper.updateMessageTxMqId(messageId, transactionSendResult.getMsgId());
             }
         }catch (Exception e){

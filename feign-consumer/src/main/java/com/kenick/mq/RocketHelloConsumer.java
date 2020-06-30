@@ -34,14 +34,16 @@ public class RocketHelloConsumer {
     @Resource
     private UnusualMapper unusualMapper;
 
+    // spring创建该类后，立刻开始订阅消息
     @PostConstruct
     public void initMethod(){
         try {
             DefaultMQPushConsumer defaultMQPushConsumer = rocketMqProducer.getDefaultMQPushConsumer();
-            defaultMQPushConsumer.setConsumerGroup("hello-consumer");
-            defaultMQPushConsumer.subscribe("kenick","2020");
-            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(10); // 批量消费 先启动生产者，再启动消费者；重要业务可使用默认值1
+            defaultMQPushConsumer.setConsumerGroup("hello-consumer"); // 设置消费组
+            defaultMQPushConsumer.subscribe("kenick","2020"); // 订阅指定topic tag的消息
+            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(10); // 批量消费最大数量
 
+            // 注册消息消费监听器
             defaultMQPushConsumer.registerMessageListener((MessageListenerConcurrently) (msgList, context) -> {
                 logger.debug("本次共收到{}条消息", msgList.size());
                 for (MessageExt messageExt: msgList) { // 批量消费
@@ -64,6 +66,8 @@ public class RocketHelloConsumer {
                             throw new RuntimeException("age 30消费发生异常!");
                         }
                         userService.updateUser(user);
+
+                        // 消费完成后，修改消费记录状态
                         unusualMapper.updateMessageTxStatus(messageId, 4); // 修改消费记录状态 成功
                     }catch (Exception e){
                         logger.debug("消费发生异常!", e);
