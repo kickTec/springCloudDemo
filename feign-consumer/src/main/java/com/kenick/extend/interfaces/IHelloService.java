@@ -1,6 +1,6 @@
 package com.kenick.extend.interfaces;
 
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -13,4 +13,5 @@ public interface IHelloService {
 
     @RequestMapping(value ="/addUser")
     String addUser(@RequestParam("userId") String userId,@RequestParam("name") String name,@RequestParam("age") Integer age);
+
 }

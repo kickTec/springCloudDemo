@@ -5,6 +5,7 @@ import com.kenick.extend.interfaces.IHelloService;
 import com.kenick.user.bean.User;
 import com.kenick.user.dao.UserMapper;
 import com.kenick.user.service.IUserService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class UserServiceImpl implements IUserService {
     @Resource
     private IHelloService helloService;
 
-    @Transactional
+    @GlobalTransactional(name = "fsp-create-order",rollbackFor = Exception.class)
     @Override
     public int saveUser(String userId, String name, int age) {
         logger.debug("本地开始保存用户！");
@@ -47,7 +48,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         // 产生异常
-        int num = 1/0;
+        // int num = 1/0;
         return ret;
     }
 

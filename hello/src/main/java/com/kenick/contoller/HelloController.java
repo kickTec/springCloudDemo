@@ -6,9 +6,12 @@ import com.kenick.user.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -24,15 +27,6 @@ public class HelloController {
 
     @RequestMapping("/hello")
     public String hello(@RequestParam String name){
-        ServiceInstance instance = client.getLocalServiceInstance();
-        try {
-            Double randomTime = Math.random() * 3000;
-            Thread.sleep(randomTime.longValue());
-            logger.info("hello sleep time:"+randomTime);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        logger.info("/hello,host:{},service_id:{},port:{}", instance.getHost(), instance.getServiceId(),instance.getPort());
         return "Hello " + name;
     }
 
@@ -57,8 +51,7 @@ public class HelloController {
         JSONObject retJson = new JSONObject();
         retJson.put("userId", userId);
         try{
-            // int saveRet = userService.saveUser(userId, name, age);
-            int saveRet = userService.saveUserByMsgTx(userId, name, age);
+            int saveRet = userService.saveUser(userId, name, age);
             retJson.put("ret", saveRet);
             retJson.put("success", true);
         }catch (Exception e){
