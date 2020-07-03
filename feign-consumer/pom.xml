@@ -42,6 +42,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- pageHelper分页插件 -->
+		<dependency>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
 		<!--druid-->
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -60,13 +67,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.8</version>
-		</dependency>
-
-		<!-- pageHelper分页插件 -->
-		<dependency>
-			<groupId>com.github.pagehelper</groupId>
-			<artifactId>pagehelper</artifactId>
-			<version>4.0.0</version>
 		</dependency>
 
 		<!--seata-->

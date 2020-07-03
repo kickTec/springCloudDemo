@@ -42,10 +42,6 @@ public class UserServiceImpl implements IUserService {
         logger.debug("开始远程调用helloservice!");
         String remoteRet = helloService.addUser("remote_hello" + userId, name, age);
         logger.debug("远程调用helloservice结果:" + remoteRet);
-        JSONObject retJson = JSONObject.parseObject(remoteRet);
-        if(!retJson.getBoolean("success")){
-            throw new RuntimeException("远程调用出现异常，需要回退!");
-        }
 
         // 产生异常
         // int num = 1/0;
